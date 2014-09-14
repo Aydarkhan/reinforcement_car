@@ -2,7 +2,7 @@
 #include <string>
 #include <tuple>
 #include <armadillo>
-#include <track.h>
+#include "track.h"
 
 using namespace arma;
 //using namespace std;
@@ -147,7 +147,7 @@ bool Track::is_finished(){
     return finished;
 }
 
-std::string status(){
+std::string Track::status(){
     return message;
 }
 

@@ -16,14 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "helloworld.h"
+#include "helloworld_gui.h"
 #include <gtkmm/application.h>
+#include "race.cpp"
+#include "car.h"
 
 int main (int argc, char *argv[])
 {
   Glib::RefPtr<Gtk::Application> app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
 
   HelloWorld helloworld;
+
+ 
 
   //Shows the window and returns when it is closed.
   return app->run(helloworld);

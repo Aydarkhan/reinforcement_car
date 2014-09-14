@@ -25,7 +25,7 @@ Car train_car(){
         action = ferrari.choose_action(pos, vel, 0.0);
 
         for(int ts = 0; ts < n_time_steps; ts++){
-            cout << track.status();
+            cout << monaco.status();
             std::tie (pos, vel, R) = monaco.move(action);
             action = ferrari.choose_action(pos, vel, R);
 
