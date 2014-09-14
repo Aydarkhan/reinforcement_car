@@ -1,6 +1,9 @@
 #include <forward_list>
+#include <functional>
 #include <string>
+#include <iostream>
 #include <tuple>
+#include <cmath>
 #include <armadillo>
 #include "track.h"
 
@@ -22,18 +25,23 @@ Track::Track() :
     pos{0.3, 0.3},
     vel{0.0, 0.0},
     last_pos(pos),
-    history{pos},
     t_penty(0),
     total_reward(0.0),
     time(0),
     finished(false),
     message("Start the engine!")
-{}
+{
+    std::cout << "Track constructor" << std::endl;
+    std::forward_list<std::tuple<double, double, std::function<double (double)>, int>>::iterator it_c = contours.before_begin();
+    it_c = contours.insert_after(it_c, std::make_tuple(0.0, 1.0, [](double x){return sin(x*datum::pi);},1));
+    it_c = contours.insert_after(it_c, std::make_tuple(0.1, 0.9, [](double x){return sin(x*datum::pi) - 0.3;},-1));
+
+}
 
 Track::~Track() {}
 
 
-mat make_accelMap(){
+mat Track::make_accelMap(){
     mat::fixed<9, 2> a;
     a << 0. << 0. << endr
       << 0. << 1. << endr
@@ -51,16 +59,24 @@ mat make_accelMap(){
 void Track::set_walls(){
     //walls;
     std::forward_list<mat::fixed<2, 2>>::iterator it = walls.before_begin();
-    it = walls.insert_after(it, mat("0.4 0.4; 0.64 0.8"));
-    it = walls.insert_after(it, mat("0.5 0.5; 0.85 1.0"));
+    it = walls.insert_after(it, mat::fixed<2,2>("0.4 0.4; 0.64 0.8"));
+    it = walls.insert_after(it, mat::fixed<2,2>("0.5 0.5; 0.85 1.0"));
+
     return;
 } 
 
 bool Track::crossed(mat::fixed<2, 2> wall, vec::fixed<2> lastpos, vec::fixed<2> pos){
-    bool cr = dot(cross(pos - lastpos, wall.col(0) - lastpos),
-              cross(pos - lastpos, wall.col(1) - lastpos)) < 0 &&
-              dot(cross(wall.col(1) - wall.col(0), pos - wall.col(0)),
-              cross(wall.col(1) - wall.col(0), lastpos - wall.col(0))) < 0;
+    mat wall3(wall);
+    wall3.resize(3,2);
+    vec lastpos3(lastpos);
+    lastpos3.resize(3);
+    vec pos3(pos);
+    pos3.resize(3);
+
+    bool cr = dot(cross(pos3 - lastpos3, wall3.col(0) - lastpos3),
+              cross(pos3 - lastpos3, wall3.col(1) - lastpos3)) < 0 &&
+              dot(cross(wall3.col(1) - wall3.col(0), pos3 - wall3.col(0)),
+              cross(wall3.col(1) - wall3.col(0), lastpos3 - wall3.col(0))) < 0;
     return cr;
 }
 
@@ -70,21 +86,35 @@ bool Track::wall_crash(vec::fixed<2> pos){
     bound = pos(0) <= xMin || pos(0) >= xMax ||
                  pos(1) <= yMin || pos(1) >= yMax;
 
-    if (!bound){
+    if (!bound)
         for(auto& w : walls)
-            wall = wall | crossed(w, this->pos, pos);
-    }
+            if(crossed(w, this->pos, pos)){
+                wall = true;
+                break;
+            }
+
     if (!wall){
+        double min, max;
+        int side;
+        std::function<double (double)> func;
+        for(auto& c : contours){
+            std::tie (min, max, func, side) = c;
+            if(pos(0) >= min && pos(0) <= max && (pos(1) - func(pos(0)))*side >=0){
+                contour = true;
+                break;
+            }
+        }
     }
     return bound & wall & contour;
 }
 
-mat::fixed<2, 2> Track::setup(int level){
-    pos = {0.05, 0.03};
-    vel = {0.0, 0.0};
+std::tuple<vec::fixed<2>, vec::fixed<2>> Track::setup(int level){
+    pos = vec("0.05 0.03");
+    vel = vec("0.0 0.0");
 
     last_pos = pos;
-    history.insert_after(history.end(), pos);
+    history.clear();
+    it_h = history.insert_after(history.before_begin(), pos);
     t_penty = 0.0;
     total_reward = 0.0;
     time = 0;
@@ -93,17 +123,19 @@ mat::fixed<2, 2> Track::setup(int level){
     if(level != 0)
         set_walls();
 
-    return join_cols(pos, vel);
+    message = "Start the engine!";
+
+    return std::make_tuple(pos, vel);
 }
 
 std::tuple<vec, vec, double> Track::move(int action){
     double rew;
     vec::fixed<2> new_pos;
 
-    vel += accelMap.row(action);
+    vel += accelMap.row(action).t();
 
     rew = 0.0;
-    message = "Time: "; // TODO add time
+    message = std::string("Time: ") + std::to_string(time); // TODO add time
 
     if(t_penty > 0){
         vel.zeros();
@@ -129,7 +161,7 @@ std::tuple<vec, vec, double> Track::move(int action){
 
     if(crossed(finishLine, pos, new_pos)){
         rew = rMax;
-        message = "Finish!";
+        message = std::string("Finish! Time: ") + std::to_string(time);
         finished = true;
     }
 
@@ -138,7 +170,7 @@ std::tuple<vec, vec, double> Track::move(int action){
     total_reward += rew;
     time++;
 
-    history.insert_after(history.end(), pos);
+    history.insert_after(it_h, pos);
 
     return std::make_tuple(pos, vel / vMax, rew);
 }// Type ???

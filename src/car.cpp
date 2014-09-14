@@ -1,6 +1,6 @@
 // Interface for Car
 
-#include <vector>
+#include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <armadillo>
@@ -10,8 +10,8 @@ using namespace arma;
 
 Car::Car() : 
     maxVel(0.3),
-    spaceDim(31),
-    velDim(11),
+    spaceDim(31), 
+    velDim(11),   
     nActions(9),
     nNeurons(spaceDim * spaceDim + velDim * velDim),
     gSpace(init_grid(0.0, 1.0, spaceDim)),
@@ -28,14 +28,17 @@ Car::Car() :
     time(0),
     weights(nActions, nNeurons, fill::zeros),
     eligibility_trace(nActions, nNeurons, fill::zeros)
-{}
+{
+    std::cout << "Car constructor" << std::endl;
+}
 
 
 Car::~Car(){}
 
 mat Car::init_grid(double start, double end, int dim){
     mat lin_vector = repmat(linspace<mat>(start, end, dim), 1, dim);
-    return join_cols(vectorise(lin_vector.t()), vectorise(lin_vector));
+    mat res = join_rows(vectorise(lin_vector.t()), vectorise(lin_vector));
+    return res;
 }
 
 
@@ -48,7 +51,7 @@ void Car::reset(){
 }
 
 
-int Car::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bool learn){
+int SimpleCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bool learn){
     vec space_r;
     vec vel_r;
     vec Q;
@@ -60,13 +63,14 @@ int Car::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bool lear
     Q.max(action);
 
     if(learn){
-        if(rand() < epsilon)
-            action = round(rand() * nActions);
+        if(rand() % 100 < epsilon * 100){
+            action = round(rand() % nActions);
+        }
 
         weights += eta * (R - Q_last + gamma + Q(action)) * eligibility_trace;
         
         eligibility_trace *= lambda * gamma;
-        eligibility_trace.row(action) +=  join_cols(space_r, vel_r);
+        eligibility_trace.row(action) +=  join_cols(space_r, vel_r).t();
 
         Q_last = Q(action);
 
@@ -74,8 +78,12 @@ int Car::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bool lear
 
     time++;
 
-    return (int) action;
+    return (int) n;
 }
 
 
+SimpleCar::SimpleCar(){}
+OptimalCar::OptimalCar(){}
 
+SimpleCar::~SimpleCar(){}
+OptimalCar::~OptimalCar(){}

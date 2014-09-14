@@ -4,11 +4,11 @@
 #ifndef CAR
 #define CAR
 
-#include <vector>
 #include <armadillo>
 
 class Car
 {
+protected:
 
     const double maxVel; //  maximum velocity
 
@@ -48,8 +48,20 @@ public:
     Car();
     virtual ~Car();
     void reset();
-    int choose_action(arma::vec::fixed<2>, arma::vec::fixed<2>, double, bool learn = true);
+    virtual int choose_action(arma::vec::fixed<2>, arma::vec::fixed<2>, double, bool learn = true) =0;
 
 };
+
+class SimpleCar : public Car{
+public:
+    SimpleCar();
+    virtual ~SimpleCar();
+}
+
+class OptimalCar : public Car{
+public:
+    OptimalCar();
+    virtual ~OptimalCar();
+}
 
 #endif // CAR

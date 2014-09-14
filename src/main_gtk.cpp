@@ -16,19 +16,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "helloworld_gui.h"
+#include "helloworld_gtk.h"
 #include <gtkmm/application.h>
-#include "race.cpp"
+#define  ARMA_DONT_USE_WRAPPER
+#include <armadillo>
+
+#include <iostream>
+#include "race.h"
 #include "car.h"
 
 int main (int argc, char *argv[])
 {
-  Glib::RefPtr<Gtk::Application> app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
+    Glib::RefPtr<Gtk::Application> app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
 
-  HelloWorld helloworld;
+    HelloWorld helloworld;
+    
+    std::cout << "Start main" << std::endl;
 
- 
+    Car ferrari = train_car();
+    race(ferrari);
 
-  //Shows the window and returns when it is closed.
-  return app->run(helloworld);
+
+    //Shows the window and returns when it is closed.
+    return 0; //app->run(helloworld);
 }

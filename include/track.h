@@ -5,6 +5,7 @@
 #define TRACK
 
 #include <forward_list>
+#include <functional>
 #include <string>
 #include <tuple>
 #include <armadillo>
@@ -31,6 +32,7 @@ class Track
 
     arma::vec::fixed<2> last_pos; 
     std::forward_list<arma::vec::fixed<2>> history;
+    std::forward_list<arma::vec::fixed<2>>::iterator it_h;
 
     int t_penty;
     double total_reward; 
@@ -40,7 +42,7 @@ class Track
     std::string message;
 
     std::forward_list<arma::mat::fixed<2, 2>> walls;
-    //const std::forward_list<arma::mat::fixed<2, 2>> contours;
+    std::forward_list<std::tuple<double, double, std::function<double (double)>, int>> contours;
 
     //car_img = im.imread('carfig.jpg');
     arma::mat make_accelMap();
@@ -51,7 +53,7 @@ class Track
 public:
     Track();
     virtual ~Track();
-    arma::mat::fixed<2, 2> setup(int);
+    std::tuple<arma::vec::fixed<2>, arma::vec::fixed<2>> setup(int);
     std::tuple<arma::vec, arma::vec, double> move(int); // Type ???
     bool is_finished();
     std::string status();
