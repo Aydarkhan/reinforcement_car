@@ -8,14 +8,14 @@
 
 using namespace arma;
 
-Car train_car(){
+void train_car(Car & ferrari){
     Track monaco;
-    Car ferrari;
     vec::fixed<2> pos, vel;
     int action;
     double R;
+    int count = 5;
 
-    int n_trials = 500, n_time_steps = 1000;
+    int n_trials = 1000, n_time_steps = 1000;
 
 
     std::cout << "Car training..." << std::endl;
@@ -29,12 +29,17 @@ Car train_car(){
 
         for(int ts = 0; ts < n_time_steps; ts++){
             std::tie (pos, vel, R) = monaco.move(action);
+            if(tr % 100 == 0)
+                cout << pos.t();
             action = ferrari.choose_action(pos, vel, R);
 
 
             if(monaco.is_finished()){
                 std::cout << monaco.status() << std::endl;
+                //if(!count--)
+                    //return;
                 break;
+
             }
             
         }
@@ -42,10 +47,10 @@ Car train_car(){
             std::cout << "Not finished" << std::endl;
         
     }
-    return ferrari;
+    return;
 }
 
-vec::fixed<2> race(Car ferrari){
+vec::fixed<2> race(Car & ferrari){
     Track monaco;
     vec::fixed<2> pos, vel;
     int action;

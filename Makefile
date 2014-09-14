@@ -2,7 +2,7 @@
 # 
 #
 
-CC := g++ -std=c++11 -g # This is the main compiler
+CC := g++ -std=c++11 -g -O2 # This is the main compiler
 # CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build
@@ -19,7 +19,7 @@ INC := -Iinclude
 
 $(TARGET): $(OBJECTS)
 	@echo "Linking..."
-	$(CC) $(GTKFLAGS) $(LIB) $^ -o $(TARGET) -O1 
+	$(CC) $(GTKFLAGS) $(LIB) $^ -o $(TARGET) 
 
 $(BUILDDIR)/%_gtk.o: $(SRCDIR)/%_gtk.$(SRCEXT)
 	mkdir -p $(BUILDDIR)
@@ -27,7 +27,7 @@ $(BUILDDIR)/%_gtk.o: $(SRCDIR)/%_gtk.$(SRCEXT)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	mkdir -p $(BUILDDIR)
-	$(CC) $(INC) $(LIB) -c -o $@ $< -O1
+	$(CC) $(INC) $(LIB) -c -o $@ $< 
 
 clean:
 	@echo "Cleaning..."; 

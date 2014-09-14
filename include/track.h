@@ -30,7 +30,7 @@ class Track
     arma::vec::fixed<2> pos; 
     arma::vec::fixed<2> vel; 
 
-    arma::vec::fixed<2> last_pos; 
+   arma::vec::fixed<2> last_pos; 
     std::forward_list<arma::vec::fixed<2>> history;
     std::forward_list<arma::vec::fixed<2>>::iterator it_h;
 

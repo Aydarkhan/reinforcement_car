@@ -5,7 +5,7 @@
 #include "car.h"
 
 
-Car train_car();
-arma::vec::fixed<2> race(Car);
+void train_car(Car &);
+arma::vec::fixed<2> race(Car &);
 
 #endif // RACE

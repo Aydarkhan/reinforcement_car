@@ -33,7 +33,8 @@ int main (int argc, char *argv[])
     
     std::cout << "Start main" << std::endl;
 
-    Car ferrari = train_car();
+    OptimalCar ferrari;
+    train_car(ferrari);
     race(ferrari);
 
 

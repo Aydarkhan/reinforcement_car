@@ -17,10 +17,10 @@ Track::Track() :
     xMin(0.0),
     yMin(0.0),
     vMax(0.3),
-    accelFactor(0.02),
+    accelFactor(0.1),
     tPenty(2),
     rPenty(-1.0),
-    finishLine("0.8 0.1; 1. 0.25"),
+    finishLine("0.8 1.; 0.1 0.25"),
     rMax(8.0),
     pos{0.3, 0.3},
     vel{0.0, 0.0},
@@ -52,7 +52,8 @@ mat Track::make_accelMap(){
       << -1/sqrt(2) << -1/sqrt(2) << endr
       << -1. << 0. << endr
       << -1/sqrt(2) << 1/sqrt(2) << endr;
-    return a;
+    //cout << accelFactor << endl;
+    return a * 0.02; // accelFactor;
 }
 
     //car_img = im.imread('carfig.jpg');
@@ -68,10 +69,13 @@ void Track::set_walls(){
 bool Track::crossed(mat::fixed<2, 2> wall, vec::fixed<2> lastpos, vec::fixed<2> pos){
     mat wall3(wall);
     wall3.resize(3,2);
+    //wall3.row(2).zeros();
     vec lastpos3(lastpos);
     lastpos3.resize(3);
+    //lastpos3(2) = 0;
     vec pos3(pos);
     pos3.resize(3);
+    //pos3(2) = 0;
 
     bool cr = dot(cross(pos3 - lastpos3, wall3.col(0) - lastpos3),
               cross(pos3 - lastpos3, wall3.col(1) - lastpos3)) < 0 &&
@@ -82,21 +86,22 @@ bool Track::crossed(mat::fixed<2, 2> wall, vec::fixed<2> lastpos, vec::fixed<2> 
 
 bool Track::wall_crash(vec::fixed<2> pos){
     bool bound = false, wall = false, contour = false;
+    double min, max;
+    int side;
+    std::function<double (double)> func;
 
     bound = pos(0) <= xMin || pos(0) >= xMax ||
                  pos(1) <= yMin || pos(1) >= yMax;
 
     if (!bound)
-        for(auto& w : walls)
+        for(auto& w : walls){
             if(crossed(w, this->pos, pos)){
                 wall = true;
                 break;
             }
+        }
 
-    if (!wall){
-        double min, max;
-        int side;
-        std::function<double (double)> func;
+    if (!bound && !wall){
         for(auto& c : contours){
             std::tie (min, max, func, side) = c;
             if(pos(0) >= min && pos(0) <= max && (pos(1) - func(pos(0)))*side >=0){
@@ -105,7 +110,7 @@ bool Track::wall_crash(vec::fixed<2> pos){
             }
         }
     }
-    return bound & wall & contour;
+    return bound || wall || contour;
 }
 
 std::tuple<vec::fixed<2>, vec::fixed<2>> Track::setup(int level){
@@ -135,7 +140,7 @@ std::tuple<vec, vec, double> Track::move(int action){
     vel += accelMap.row(action).t();
 
     rew = 0.0;
-    message = std::string("Time: ") + std::to_string(time); // TODO add time
+    message = std::string("Time: ") + std::to_string(time); 
 
     if(t_penty > 0){
         vel.zeros();
@@ -161,7 +166,7 @@ std::tuple<vec, vec, double> Track::move(int action){
 
     if(crossed(finishLine, pos, new_pos)){
         rew = rMax;
-        message = std::string("Finish! Time: ") + std::to_string(time);
+        message = std::string("Finish! Time: ") + std::to_string(time) + ", Reward: " + std::to_string(total_reward);
         finished = true;
     }
 

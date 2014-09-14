@@ -18,8 +18,6 @@ protected:
 
     const int nActions; 
     const int nNeurons;
-    arma::mat weights; 
-    arma::mat eligibility_trace;
 
     // Grid
     const arma::mat gSpace; // = array([(x, y) for x in linspace(0.0, 1.0, space_dim) for y in linspace(0.0, 1.0,\
@@ -45,23 +43,31 @@ protected:
     arma::mat init_grid(double, double, int);
 
 public:
-    Car();
+    Car(int, int);
     virtual ~Car();
-    void reset();
+    virtual void reset();
     virtual int choose_action(arma::vec::fixed<2>, arma::vec::fixed<2>, double, bool learn = true) =0;
 
 };
 
 class SimpleCar : public Car{
+    arma::mat weights; 
+    arma::mat eligibility_trace;
 public:
     SimpleCar();
     virtual ~SimpleCar();
-}
+    virtual int choose_action(arma::vec::fixed<2>, arma::vec::fixed<2>, double, bool learn = true);
+    virtual void reset();
+};
 
 class OptimalCar : public Car{
+    arma::cube weights; 
+    arma::cube eligibility_trace;
 public:
     OptimalCar();
     virtual ~OptimalCar();
-}
+    virtual int choose_action(arma::vec::fixed<2>, arma::vec::fixed<2>, double, bool learn = true);
+    virtual void reset();
+};
 
 #endif // CAR
