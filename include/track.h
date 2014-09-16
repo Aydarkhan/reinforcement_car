@@ -5,6 +5,7 @@
 #define TRACK
 
 #include <forward_list>
+#include <vector>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -12,32 +13,26 @@
 
 class Track
 {
+    const double accelFactor; // acceleration per time step
     const arma::mat::fixed<9, 2> accelMap; // maps the action number to the correspondent acceleration vector
 
     // limits of the track
-    const double xMax, yMax, xMin, yMin;
-
-    const double vMax;   // maximum velocity
-    const double accelFactor; // acceleration per time step
-
-    const double tPenty; // time penalty for hitting a wall. the car stays still for this number of time steps.
-    const double rPenty; // reward penalty for hitting a wall.
-
-    const arma::mat::fixed<2, 2> finishLine; 
-
-    const double rMax;
+    const double xMax, yMax, xMin, yMin, vMax;
 
     arma::vec::fixed<2> pos; 
     arma::vec::fixed<2> vel; 
-
-   arma::vec::fixed<2> last_pos; 
-    std::forward_list<arma::vec::fixed<2>> history;
+    arma::vec::fixed<2> last_pos; 
+    std::vector<arma::vec::fixed<2>> history;
     std::forward_list<arma::vec::fixed<2>>::iterator it_h;
 
+    const int tPenty; // time penalty for hitting a wall. the car stays still for this number of time steps.
+    const double rPenty; // reward penalty for hitting a wall.
+    const double rMax;
     int t_penty;
     double total_reward; 
     int time;  // time steps
 
+    const arma::mat::fixed<2, 2> finishLine; 
     bool finished; 
     std::string message;
 
@@ -57,6 +52,7 @@ public:
     std::tuple<arma::vec, arma::vec, double> move(int); // Type ???
     bool is_finished();
     std::string status();
+    std::vector<arma::vec::fixed<2>> get_history();
 
 };
 

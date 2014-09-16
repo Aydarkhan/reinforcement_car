@@ -20,10 +20,10 @@
 #include <gtkmm/application.h>
 #define  ARMA_DONT_USE_WRAPPER
 #include <armadillo>
-
 #include <iostream>
 #include "race.h"
 #include "car.h"
+#include "track.h"
 
 int main (int argc, char *argv[])
 {
@@ -34,9 +34,9 @@ int main (int argc, char *argv[])
     std::cout << "Start main" << std::endl;
 
     OptimalCar ferrari;
-    train_car(ferrari);
-    race(ferrari);
-
+    Track monaco;
+    train_car(ferrari, monaco);
+    race(ferrari, monaco);
 
     //Shows the window and returns when it is closed.
     return 0; //app->run(helloworld);

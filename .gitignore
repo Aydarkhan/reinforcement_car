@@ -1,8 +1,10 @@
 # Ignore the build and lib dirs
 build
 lib/*
+logs/*
 
 # Ignore any executables
 bin/*
 
 core
+

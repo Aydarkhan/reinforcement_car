@@ -14,7 +14,8 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 #GTKFLAGS := -g # -Wall
 GTKFLAGS=`pkg-config gtkmm-3.0 --cflags --libs`
 #LIB := -pthread -lmongoclient -L lib -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt
-LIB := -larmadillo #-llapack -lblas
+LIB := -larmadillo -lboost_iostreams -lboost_system -lboost_filesystem -lutil #-llapack -lblas 
+#-lutil -lboost_iostreams -lboost_system -lboost_filesystem
 INC := -Iinclude
 
 $(TARGET): $(OBJECTS)

@@ -3,9 +3,10 @@
 
 #include <armadillo>
 #include "car.h"
+#include "track.h"
 
 
-void train_car(Car &);
-arma::vec::fixed<2> race(Car &);
+void train_car(Car &, Track &);
+void race(Car &, Track &);
 
 #endif // RACE

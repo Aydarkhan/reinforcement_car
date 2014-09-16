@@ -11,13 +11,13 @@ using namespace arma;
 //using namespace std;
 
 Track::Track() :
+    accelFactor(0.02),
     accelMap(make_accelMap()),
     xMax(1.0),
     yMax(1.0),
     xMin(0.0),
     yMin(0.0),
     vMax(0.3),
-    accelFactor(0.1),
     tPenty(2),
     rPenty(-1.0),
     finishLine("0.8 1.; 0.1 0.25"),
@@ -31,7 +31,9 @@ Track::Track() :
     finished(false),
     message("Start the engine!")
 {
-    std::cout << "Track constructor" << std::endl;
+    std::cout << "Creating a track..." << std::endl;
+
+    // Make contours
     std::forward_list<std::tuple<double, double, std::function<double (double)>, int>>::iterator it_c = contours.before_begin();
     it_c = contours.insert_after(it_c, std::make_tuple(0.0, 1.0, [](double x){return sin(x*datum::pi);},1));
     it_c = contours.insert_after(it_c, std::make_tuple(0.1, 0.9, [](double x){return sin(x*datum::pi) - 0.3;},-1));
@@ -52,8 +54,7 @@ mat Track::make_accelMap(){
       << -1/sqrt(2) << -1/sqrt(2) << endr
       << -1. << 0. << endr
       << -1/sqrt(2) << 1/sqrt(2) << endr;
-    //cout << accelFactor << endl;
-    return a * 0.02; // accelFactor;
+    return a * accelFactor;
 }
 
     //car_img = im.imread('carfig.jpg');
@@ -115,12 +116,13 @@ bool Track::wall_crash(vec::fixed<2> pos){
 
 std::tuple<vec::fixed<2>, vec::fixed<2>> Track::setup(int level){
     pos = vec("0.05 0.03");
-    vel = vec("0.0 0.0");
+    vel.zeros();
 
     last_pos = pos;
     history.clear();
-    it_h = history.insert_after(history.before_begin(), pos);
-    t_penty = 0.0;
+    //it_h = history.insert_after(history.before_begin(), pos);
+    history.push_back(pos);
+    t_penty = 0;
     total_reward = 0.0;
     time = 0;
     finished = false;
@@ -130,7 +132,7 @@ std::tuple<vec::fixed<2>, vec::fixed<2>> Track::setup(int level){
 
     message = "Start the engine!";
 
-    return std::make_tuple(pos, vel);
+    return std::make_tuple(pos, vel/vMax);
 }
 
 std::tuple<vec, vec, double> Track::move(int action){
@@ -175,10 +177,11 @@ std::tuple<vec, vec, double> Track::move(int action){
     total_reward += rew;
     time++;
 
-    history.insert_after(it_h, pos);
+    //it_h = history.insert_after(it_h, pos);
+    history.push_back(pos);
 
     return std::make_tuple(pos, vel / vMax, rew);
-}// Type ???
+}
 
 bool Track::is_finished(){
     return finished;
@@ -186,5 +189,9 @@ bool Track::is_finished(){
 
 std::string Track::status(){
     return message;
+}
+
+std::vector<arma::vec::fixed<2>> Track::get_history(){
+    return history;
 }
 
