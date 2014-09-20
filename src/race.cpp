@@ -69,21 +69,5 @@ void race(Car & ferrari, Track & monaco){
     if(!monaco.is_finished())
         std::cout << "Not finished" << endl;
 
-
-    cout << "The race:" << endl;
-    
-    //mat A = mat(monaco.get_history());
-
-    //Gnuplot gp;
-    //gp << "set xrange [-2:2]\nset yrange [-2:2]\n";
-    //gp << "plot '-' w p title 'Car', sin(x*pi), sin(x*pi) - 0.3";
-    //gp.send1d(monaco.get_history());
-
-    for(auto& pos : monaco.get_history()){
-       cout << pos.t();
-       //std::vector<std::vector<double>> a = {{0, 0},{pos(0), pos(1)}};
-       //gp.send1d(a);
-    }
-
     return;
 }

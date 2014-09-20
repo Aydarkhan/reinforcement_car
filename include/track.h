@@ -53,6 +53,9 @@ public:
     bool is_finished();
     std::string status();
     std::vector<arma::vec::fixed<2>> get_history();
+    std::forward_list<std::tuple<double, double, std::function<double (double)>, int>> get_contours();
+    std::forward_list<arma::mat::fixed<2, 2>> get_walls();
+    arma::mat::fixed<2, 2> get_finishLine(); 
 
 };
 

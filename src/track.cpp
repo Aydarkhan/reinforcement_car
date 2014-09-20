@@ -36,7 +36,7 @@ Track::Track() :
     // Make contours
     std::forward_list<std::tuple<double, double, std::function<double (double)>, int>>::iterator it_c = contours.before_begin();
     it_c = contours.insert_after(it_c, std::make_tuple(0.0, 1.0, [](double x){return sin(x*datum::pi);},1));
-    it_c = contours.insert_after(it_c, std::make_tuple(0.1, 0.9, [](double x){return sin(x*datum::pi) - 0.3;},-1));
+    it_c = contours.insert_after(it_c, std::make_tuple(0.09, 0.91, [](double x){return sin(x*datum::pi) - 0.3;},-1));
 
 }
 
@@ -61,7 +61,7 @@ mat Track::make_accelMap(){
 void Track::set_walls(){
     //walls;
     std::forward_list<mat::fixed<2, 2>>::iterator it = walls.before_begin();
-    it = walls.insert_after(it, mat::fixed<2,2>("0.4 0.4; 0.64 0.8"));
+    it = walls.insert_after(it, mat::fixed<2,2>("0.4 0.4; 0.65 0.8"));
     it = walls.insert_after(it, mat::fixed<2,2>("0.5 0.5; 0.85 1.0"));
 
     return;
@@ -195,3 +195,14 @@ std::vector<arma::vec::fixed<2>> Track::get_history(){
     return history;
 }
 
+std::forward_list<std::tuple<double, double, std::function<double (double)>, int>> Track::get_contours(){
+    return contours;
+}
+
+std::forward_list<arma::mat::fixed<2, 2>> Track::get_walls(){
+    return walls;
+}
+
+arma::mat::fixed<2, 2> Track::get_finishLine(){
+    return finishLine;
+}

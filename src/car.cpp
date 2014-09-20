@@ -130,7 +130,9 @@ int OptimalCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bo
         //if(rand() % 100 < epsilon * 100 / 10)
             //action = round(rand() % nActions);
         //else
-            Q.max(action);
+        Q.max(action);
+        if(arma::norm(vel, 1) == 0 && action == 0)
+            action = round(rand() % nActions);
     }
     
     return (int) action;
