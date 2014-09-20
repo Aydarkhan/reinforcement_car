@@ -9,7 +9,8 @@
 
 using namespace arma;
 
-Car::Car(int spacedim, int veldim) : 
+Car::Car(int spacedim, int veldim, std::string name) : 
+    name(name),
     nActions(9),
     spaceDim(spacedim),
     velDim(veldim),
@@ -39,19 +40,24 @@ mat Car::init_grid(double start, double end, int dim){
     return res;
 }
 
+std::string Car::get_name(){
+    return name;
+}
 
 void Car::reset(){
     epsilon *= epsilon_decay;
     Q_last = 0.0;
+    velPrev.zeros();
+    stuck = false;
     return;
 }
 
-SimpleCar::SimpleCar(): Car(31, 11),
+SimpleCar::SimpleCar(): Car(31, 11, "Lada"),
     weights(nActions, nNeurons, fill::zeros),
     eligibility_trace(nActions, nNeurons, fill::zeros)
 {}
 
-OptimalCar::OptimalCar(): Car(11, 5),
+OptimalCar::OptimalCar(): Car(11, 5, "Ferrari"),
     weights(spaceDim * spaceDim, velDim * velDim, nActions,  fill::zeros),
     eligibility_trace(spaceDim * spaceDim, velDim * velDim, nActions, fill::zeros)
 {}
@@ -68,12 +74,12 @@ int SimpleCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, boo
     space_r = exp(-(pow(pos(0) - gSpace.col(0), 2) + pow(pos(1) - gSpace.col(1), 2)) / spaceSigmaDenom);
     vel_r = exp(-(pow(pos(0) - gVel.col(0), 2) + pow(pos(1) - gVel.col(1), 2)) / velSigmaDenom);
     Q = weights * join_cols(space_r, vel_r);
-    Q.max(action);
 
     if(learn){
-        if(rand() % 100 < epsilon * 100){
+        if(rand() % 100 < epsilon * 100)
             action = round(rand() % nActions);
-        }
+        else
+            Q.max(action);
 
         weights += eta * (R - Q_last + gamma * Q(action)) * eligibility_trace;
         
@@ -82,6 +88,20 @@ int SimpleCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, boo
 
         Q_last = Q(action);
 
+    }
+    else{
+        if(norm(velPrev, 1) == 0 && R < 0){
+            stuck = true;
+            std::cout << "Stuck" << endl;
+        }
+        else if(norm(vel, 1))
+            stuck = false;
+
+        if(stuck)
+            action = round(rand() % nActions);
+        else
+            Q.max(action);
+        velPrev = vel;
     }
 
 
@@ -119,7 +139,7 @@ int OptimalCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bo
             Q.max(action);
 
         weights += eta * (R - Q_last + gamma * Q(action)) * eligibility_trace;
-        
+
         eligibility_trace *= lambda; // * gamma;
         eligibility_trace.slice(action) +=  r;
 
@@ -127,12 +147,18 @@ int OptimalCar::choose_action(vec::fixed<2> pos, vec::fixed<2> vel, double R, bo
 
     }
     else{
-        //if(rand() % 100 < epsilon * 100 / 10)
-            //action = round(rand() % nActions);
-        //else
-        Q.max(action);
-        if(arma::norm(vel, 1) == 0 && action == 0)
+        if(norm(velPrev, 1) == 0 && R < 0){
+            stuck = true;
+            std::cout << "Stuck" << endl;
+        }
+        else if(norm(vel, 1))
+            stuck = false;
+
+        if(stuck)
             action = round(rand() % nActions);
+        else
+            Q.max(action);
+        velPrev = vel;
     }
     
     return (int) action;

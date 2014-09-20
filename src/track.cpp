@@ -168,7 +168,7 @@ std::tuple<vec, vec, double> Track::move(int action){
 
     if(crossed(finishLine, pos, new_pos)){
         rew = rMax;
-        message = std::string("Finish! Time: ") + std::to_string(time) + ", Reward: " + std::to_string(total_reward);
+        message = std::string("Finish! Time: ") + std::to_string(time) + ", Reward: " + std::to_string(total_reward + rew);
         finished = true;
     }
 

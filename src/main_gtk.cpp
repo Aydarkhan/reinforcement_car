@@ -41,6 +41,7 @@ int main (int argc, char *argv[])
     std::cout << "Start main" << std::endl;
 
     OptimalCar ferrari;
+    SimpleCar lada;
     Track monaco;
     //train_car(ferrari, monaco);
     //race(ferrari, monaco);
@@ -51,29 +52,39 @@ int main (int argc, char *argv[])
 
     Gtk::Box box(Gtk::ORIENTATION_VERTICAL, 20);
     box.set_homogeneous(false);
-    win.add(box);
 
     Gtk::AspectFrame areaF;
-    box.pack_start(areaF);
-    TrackArea area(&monaco);
+    TrackArea area(&monaco, &ferrari);
     //Gtk::Allocation areaA( 0, 0, 800, 800 );   
     //area.size_allocate(areaA);
-    areaF.add(area);
 
 
+    Gtk::Box buttonsBcars;
     Gtk::ButtonBox buttonsB;
     buttonsB.set_layout(Gtk::BUTTONBOX_CENTER);
-    box.pack_start(buttonsB, false, false);
 
-    CarButton startB("Train", &monaco, &ferrari);
-    startB.signal_clicked().connect(sigc::mem_fun(startB, &CarButton::on_button_clicked_train));
-    startB.signal_clicked().connect(sigc::mem_fun(area, &TrackArea::draw_last));
+    Gtk::Button ladaB("Lada");
+    ladaB.signal_clicked().connect(sigc::bind<Car *>(sigc::mem_fun(area, &TrackArea::changeCar), &lada));
+
+    Gtk::Button startB("Train");
+    startB.signal_clicked().connect(sigc::mem_fun(area, &TrackArea::train));
+
+    Gtk::Button drawB("Race");
+    drawB.signal_clicked().connect(sigc::mem_fun(area, &TrackArea::race));
+
+    Gtk::Button ferrariB("Ferrari");
+    ferrariB.signal_clicked().connect(sigc::bind<Car *>(sigc::mem_fun(area, &TrackArea::changeCar), &ferrari));
+
+    buttonsBcars.pack_start(ferrariB);
+    buttonsBcars.pack_start(buttonsB);
+    buttonsBcars.pack_start(ladaB);
     buttonsB.pack_start(startB);
-
-    CarButton drawB("Race", &monaco, &ferrari);
-    drawB.signal_clicked().connect(sigc::mem_fun(startB, &CarButton::on_button_clicked_race));
-    drawB.signal_clicked().connect(sigc::mem_fun(area, &TrackArea::draw_race));
     buttonsB.pack_start(drawB);
+
+    areaF.add(area);
+    box.pack_start(areaF);
+    box.pack_start(buttonsBcars, false, false);
+    win.add(box);
 
     win.show_all_children();
 

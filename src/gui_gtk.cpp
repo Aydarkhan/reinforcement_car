@@ -14,22 +14,45 @@ TrackArea::TrackArea()
 {
     override_background_color(Gdk::RGBA("#FFFFFF"));
 }
-TrackArea::TrackArea(Track * monacoP) : TrackArea() {
+TrackArea::TrackArea(Track * monacoP, Car * ferrariP) : TrackArea() {
     this->monacoP = monacoP;
+    this->ferrariP = ferrariP;
 }
 TrackArea::~TrackArea() {}
 
-void TrackArea::draw_last(){
+void TrackArea::changeCar(Car * carP){
     Glib::Threads::Mutex::Lock lock(mutexM);
-    trajectory = monacoP->get_history();
-    queue_draw();
+    ferrariP = carP;
+    std::cout << "Car name: " << carP->get_name() << std::endl;
     return;
 }
 
-void TrackArea::draw_race(){
-    //do_draw_race();
+void TrackArea::train(){
+    if (drawingThread)
+    {
+        std::cout << "Can't start a drawing thread while another one is running." << std::endl;
+    }
+    else
+    {
+        // Start a new worker thread.
+        drawingThread = Glib::Threads::Thread::create(
+                sigc::mem_fun(*this, &TrackArea::draw_train));
+    }
 
+    return;
+}
+void TrackArea::draw_train(){
     Glib::Threads::Mutex::Lock lock(mutexM);
+
+    train_car(*ferrariP, *monacoP);
+    trajectory = monacoP->get_history();
+    queue_draw();
+
+    drawingThread = 0;
+    return;
+}
+
+void TrackArea::race(){
 
     if (drawingThread)
     {
@@ -39,17 +62,19 @@ void TrackArea::draw_race(){
     {
         // Start a new worker thread.
         drawingThread = Glib::Threads::Thread::create(
-                sigc::mem_fun(*this, &TrackArea::do_draw_race));
+                sigc::mem_fun(*this, &TrackArea::draw_race));
     }
     return;
 }
 
-void TrackArea::do_draw_race(){
+void TrackArea::draw_race(){
+    Glib::Threads::Mutex::Lock lock(mutexM);
+    ::race(*ferrariP, *monacoP);
     trajectory.clear();
     for(auto& pos: monacoP->get_history()){
         trajectory.push_back(pos);
         queue_draw();
-        Glib::usleep(30000);
+        Glib::usleep(100000);
     }
 
     //drawingThread->join();
@@ -105,22 +130,5 @@ bool TrackArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr){
     }
 
     return true;
-}
-
-CarButton::CarButton() {}
-CarButton::CarButton(std::string label, Track * monacoP, Car * ferrariP) : 
-    Gtk::Button(label),
-    monacoP(monacoP), 
-    ferrariP(ferrariP)
-{}
-CarButton::~CarButton() {}
-
-void CarButton::on_button_clicked_train(){
-    train_car(*ferrariP, *monacoP);
-    return;
-}
-void CarButton::on_button_clicked_race(){
-    race(*ferrariP, *monacoP);
-    return;
 }
 
