@@ -3,7 +3,6 @@
 #
 
 CC := g++ -std=c++11 -g -O2 # This is the main compiler
-# CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build
 TARGET := bin/race
@@ -13,9 +12,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 #GTKFLAGS := -g # -Wall
 GTKFLAGS=`pkg-config gtkmm-3.0 --cflags --libs`
-#LIB := -pthread -lmongoclient -L lib -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt
-LIB := -larmadillo -lboost_iostreams -lboost_system -lboost_filesystem -lutil #-llapack -lblas 
-#-lutil -lboost_iostreams -lboost_system -lboost_filesystem
+LIB := -larmadillo -lboost_iostreams -lboost_system -lboost_filesystem -lutil 
 INC := -Iinclude
 
 $(TARGET): $(OBJECTS)
@@ -33,13 +30,5 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 clean:
 	@echo "Cleaning..."; 
 	$(RM) -r $(BUILDDIR) $(TARGET)
-
-# Tests
-#tester:
-#$(CC) $(GTKFLAGS) test/tester.cpp $(INC) $(LIB) -o bin/tester
-
-## Spikes
-#ticket:
-#$(CC) $(GTKFLAGS) spikes/ticket.cpp $(INC) $(LIB) -o bin/ticket
 
 .PHONY: clean
